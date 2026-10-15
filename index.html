@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kit Order Sheet Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#e9dcbc;--panel:#f4ebd3;--ink:#2b2a28;--pitch:#2f7d4f;--red:#d9452b;--gold:#e7b53c;--hi:#fffaf0;--lo:#c9ba93;--field:#fbf5e4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17221b;--panel:#21332a;--ink:#efe6cf;--pitch:#3f9d66;--hi:#2b4235;--lo:#101a14;--field:#1a2a21}}
+:root[data-theme="dark"]{--bg:#17221b;--panel:#21332a;--ink:#efe6cf;--pitch:#3f9d66;--hi:#2b4235;--lo:#101a14;--field:#1a2a21}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Courier Prime','Courier New',monospace;
+background-image:radial-gradient(var(--lo) 1px,transparent 1.5px);background-size:18px 18px}
+main{max-width:980px;margin:0 auto;padding:18px 14px 60px}
+h1,h2{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;margin:0;font-weight:400}
+.hero{text-align:center;padding:10px 0 18px}
+.hero h1{font-size:clamp(38px,9vw,64px);line-height:1;text-shadow:3px 3px 0 var(--gold)}
+.hero p{font-family:'Permanent Marker',cursive;color:var(--red);margin:6px 0 0;transform:rotate(-1.5deg);font-size:18px}
+.card{background:var(--panel);border:2.5px solid var(--ink);border-radius:255px 18px 225px 18px/18px 225px 18px 255px;padding:18px;margin-bottom:22px;
+box-shadow:6px 6px 0 var(--ink),-6px -6px 14px var(--hi),10px 12px 20px var(--lo)}
+.card h2{font-size:26px;margin-bottom:10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
+label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px}
+input{font:inherit;color:var(--ink);background:var(--field);border:2px solid var(--ink);border-radius:10px 4px 12px 4px;padding:8px 10px;width:100%;
+box-shadow:inset 2px 2px 5px var(--lo),inset -2px -2px 4px var(--hi)}
+input:focus{outline:3px dashed var(--red);outline-offset:1px}
+.tw{overflow-x:auto;margin-top:6px;padding-bottom:6px}
+table.ed{border-collapse:separate;border-spacing:0 7px;min-width:640px;width:100%}
+table.ed th{font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:1px;padding:0 4px}
+table.ed td{padding:0 4px}
+.nm{font-family:'Bebas Neue';font-size:20px;width:34px;color:var(--pitch);text-align:center}
+.bar{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+button{font:700 14px 'Courier Prime',monospace;text-transform:uppercase;letter-spacing:1px;color:var(--ink);background:var(--gold);border:2.5px solid var(--ink);
+border-radius:14px 5px 14px 5px;padding:10px 14px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:.08s}
+button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+button.g{background:var(--pitch);color:#fff}button.r{background:var(--red);color:#fff}button.p{background:var(--panel)}
+button.x{padding:6px 9px;background:var(--panel);box-shadow:2px 2px 0 var(--ink)}
+.stage{overflow-x:auto;padding:8px 4px 18px}
+#sheet{width:760px;margin:0 auto;background:#f6eed8;color:#2b2a28;border:3px solid #2b2a28;padding:0 0 18px;position:relative;
+background-image:radial-gradient(#d9ccaa 1px,transparent 1.5px);background-size:16px 16px;font-family:'Courier Prime','Courier New',monospace}
+.sh{background:#2f7d4f;color:#fff;padding:22px 26px 18px;position:relative;overflow:hidden;border-bottom:3px solid #2b2a28}
+.sh svg{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.sh>*{position:relative}
+.sh .k{font-family:'Permanent Marker',cursive;color:#e7b53c;font-size:18px;transform:rotate(-2deg);display:inline-block}
+.sh h3{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:54px;line-height:1;margin:2px 0 0;letter-spacing:2px;text-shadow:3px 3px 0 #2b2a28}
+.sh .sub{font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.ball{position:absolute!important;right:22px;top:16px;width:74px;height:74px}
+table.sp{width:calc(100% - 44px);margin:16px 22px 0;border-collapse:collapse;font-size:13.5px}
+table.sp th{font-family:'Bebas Neue',Impact;font-weight:400;font-size:16px;letter-spacing:1.5px;text-align:left;padding:6px 6px;border-bottom:3px double #2b2a28;color:#d9452b}
+table.sp td{padding:6px 6px;border-bottom:1.5px dashed #8d836a}
+table.sp tr:nth-child(even) td{background:rgba(47,125,79,.08)}
+.c{text-align:center!important}
+.jn{display:inline-block;min-width:34px;padding:1px 6px;border:2px solid #2b2a28;border-radius:50% 45% 55% 40%;font-weight:700;background:#e7b53c;text-align:center}
+.jj{font-family:'Bebas Neue',Impact;font-size:17px;letter-spacing:1px}
+.tally{margin:14px 22px 0;padding:10px 12px;border:2.5px dashed #2b2a28;border-radius:14px 4px 14px 4px;font-size:12.5px;line-height:1.7;background:#fffaf0}
+.tally b{font-family:'Bebas Neue',Impact;font-weight:400;font-size:16px;letter-spacing:1px;color:#2f7d4f}
+.chip{display:inline-block;border:1.5px solid #2b2a28;border-radius:8px;padding:0 6px;margin:0 4px 2px 0;background:#f6eed8}
+.empty{text-align:center;padding:26px;font-family:'Permanent Marker',cursive;color:#8d836a}
+.note{font-size:12px;opacity:.8;margin-top:8px}
+</style></head>
+<body><main>
+<div class="hero"><h1>⚽ Kit Order Sheet</h1><p>draw up the squad, share the list!</p></div>
+
+<section class="card">
+<h2>Team Details</h2>
+<div class="row2">
+<div><label for="team">Team name</label><input id="team" placeholder="e.g. Night Hawks FC"></div>
+<div><label for="sub">Subtitle / date</label><input id="sub" placeholder="e.g. Number Exchange · Oct 2026"></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Squad</h2>
+<div class="tw"><table class="ed"><thead><tr><th></th><th>Player name</th><th>Jersey name</th><th>No.</th><th>Jersey size</th><th>Trouser size</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="bar">
+<button class="g" id="add">+ Add player</button>
+<button class="p" id="sample">Load sample</button>
+<button class="r" id="clear">Clear all</button>
+</div>
+<div class="note">Auto-saved in this browser. Leave jersey name blank if the player has none.</div>
+</section>
+
+<section class="card">
+<h2>Preview &amp; Export</h2>
+<div class="bar" style="margin:0 0 10px">
+<button class="g" id="png">⬇ Save as image</button>
+<button id="pdf">⬇ Save as PDF</button>
+</div>
+<div class="stage"><div id="sheet"></div></div>
+<div class="note" id="msg"></div>
+</section>
+</main>
+<script>
+const KEY='kitlist-v1';
+const SAMPLE="Mubarak Sr||93|38|40;Mushrif|RAMOS|4|36|36;Mubarak.ddk||27|38|38;Abyaz|ABYAZ|13|38|40;Mohammed|MOHD|10|36|38;Ijaaz|RAGNAR|95|36|38;Asil bk|FLORIA|3|38|40;Salman|SALLU|69|40|40;Akthar||25|40|40;Haleem|HLM|66|38|40;Ayaan|JUDE|5|38|40;Mashooq|MASOOK|15|38|40;Ibrahim|IBUKO|20|40|42;Irfan|BRAUT|09|38|40;Sharukh|FEDERICO|11|38|40;Sayaan|ZLATAN|16|38|40;Ayaan|VK|94|38|38;Afreen|LEO|30|36|36;Adnan|KIMMICH|6|38|40;Afroz|ADEYEMI|14|42|42;Fazil|FAAZIL|17|38|38;Islah||26|38|40;Mamun|ACTION BOLT|99|38|40;Riyaz|RYZ|18|38|40;Minhaaj|MINN|33|36|28;Akram||46|38|40;Amaan|PEDRI|8|36|36;Shan|SHANX|27|40|40;Imtiyaz|CARVAJAL|2|40|42;Sohil|MODRIC|19|38|40";
+const blank=()=>({n:'',j:'',no:'',js:'',ts:''});
+let S={team:'',sub:'',p:[blank(),blank(),blank()]};
+try{const r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const F=[['n','Player name'],['j','Jersey name'],['no','No.'],['js','Size'],['ts','Size']];
+function renderRows(){
+  $('rows').innerHTML=S.p.map((p,i)=>'<tr><td class="nm">'+(i+1)+'</td>'+F.map(([k,ph],x)=>'<td><input data-i="'+i+'" data-k="'+k+'" value="'+esc(p[k])+'" placeholder="'+ph+'"'+(x>=2?' inputmode="numeric" style="min-width:70px"':'')+'></td>').join('')+'<td><button class="x" data-del="'+i+'" title="Remove">✕</button></td></tr>').join('');
+}
+const pitchSvg='<svg viewBox="0 0 760 130" preserveAspectRatio="none" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round"><rect x="10" y="10" width="740" height="110"/><line x1="380" y1="10" x2="380" y2="120"/><circle cx="380" cy="65" r="30"/><rect x="10" y="35" width="60" height="60"/><rect x="690" y="35" width="60" height="60"/></svg>';
+const ballSvg='<svg class="ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#fffaf0" stroke="#2b2a28" stroke-width="4"/><polygon points="50,30 69,44 62,66 38,66 31,44" fill="#2b2a28"/><g stroke="#2b2a28" stroke-width="4" stroke-linecap="round"><path d="M50 30V8M69 44l22-7M62 66l13 19M38 66L25 85M31 44L9 37"/></g></svg>';
+function renderSheet(){
+  const ps=S.p.filter(p=>p.n||p.j||p.no||p.js||p.ts);
+  const cnt=k=>{const m={};ps.forEach(p=>{const v=String(p[k]).trim();if(v)m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>parseFloat(a[0])-parseFloat(b[0])).map(([s,c])=>'<span class="chip">'+esc(s)+' × '+c+'</span>').join('')||'—'};
+  $('sheet').innerHTML='<div class="sh">'+pitchSvg+ballSvg+'<span class="k">Team kit order list</span><h3>'+esc(S.team||'Your Team FC')+'</h3><div class="sub">'+esc(S.sub||'Kit order sheet')+'</div></div>'+
+  (ps.length?'<table class="sp"><thead><tr><th class="c">#</th><th>Player name</th><th>Jersey name</th><th class="c">No.</th><th class="c">Jersey</th><th class="c">Trouser</th></tr></thead><tbody>'+
+  ps.map((p,i)=>'<tr><td class="c">'+(i+1)+'</td><td>'+esc(p.n)+'</td><td class="jj">'+esc(p.j)+'</td><td class="c">'+(p.no?'<span class="jn">'+esc(p.no)+'</span>':'')+'</td><td class="c">'+esc(p.js)+'</td><td class="c">'+esc(p.ts)+'</td></tr>').join('')+
+  '</tbody></table><div class="tally"><b>Total players:</b> '+ps.length+'<br><b>Jersey sizes:</b> '+cnt('js')+'<br><b>Trouser sizes:</b> '+cnt('ts')+'</div>':'<div class="empty">Add players to fill the squad sheet ✎</div>');
+}
+function upd(){save();renderSheet()}
+$('team').value=S.team;$('sub').value=S.sub;
+$('team').oninput=e=>{S.team=e.target.value;upd()};
+$('sub').oninput=e=>{S.sub=e.target.value;upd()};
+$('rows').addEventListener('input',e=>{const t=e.target;if(t.dataset.k){S.p[t.dataset.i][t.dataset.k]=t.value;upd()}});
+$('rows').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){S.p.splice(+b.dataset.del,1);renderRows();upd()}});
+$('add').onclick=()=>{S.p.push(blank());renderRows();upd();const i=$('rows').querySelectorAll('tr:last-child input')[0];i&&i.focus()};
+$('clear').onclick=()=>{if(confirm('Remove all players?')){S.p=[blank()];renderRows();upd()}};
+$('sample').onclick=()=>{S.p=SAMPLE.split(';').map(r=>{const a=r.split('|');return{n:a[0],j:a[1],no:a[2],js:a[3],ts:a[4]}});renderRows();upd()};
+function say(t){$('msg').textContent=t}
+async function deliver(name,blob){
+  let dl=null;try{dl=window.claude&&await window.claude.use('downloads')}catch(e){}
+  if(dl){try{await dl.save({filename:name,data:blob});say('Saved ✔ '+name)}catch(e){say(e&&e.code==='declined'?'Save cancelled.':'Could not save here: '+((e&&e.message)||e))}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();say('Downloaded '+name);
+}
+async function shot(){
+  await (document.fonts&&document.fonts.ready);
+  const el=$('sheet');
+  return html2canvas(el,{scale:2,backgroundColor:'#f6eed8',useCORS:true,width:el.offsetWidth,windowWidth:Math.max(el.offsetWidth,900)});
+}
+const fname=ext=>((S.team||'kit-order-list').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')||'kit-order-list')+'.'+ext;
+$('png').onclick=async()=>{say('Drawing the sheet…');try{const c=await shot();c.toBlob(b=>deliver(fname('png'),b),'image/png')}catch(e){say('Image export failed: '+e.message)}};
+$('pdf').onclick=async()=>{say('Drawing the sheet…');try{
+  const c=await shot(),{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,H=297,m=8,w=W-2*m,h=c.height*w/c.width,img=c.toDataURL('image/jpeg',.95),pg=H-2*m;
+  if(h<=pg){pdf.addImage(img,'JPEG',m,m,w,h)}
+  else{let y=0,first=true;while(y<h){if(!first)pdf.addPage();pdf.addImage(img,'JPEG',m,m-y,w,h);pdf.setFillColor(255,255,255);pdf.rect(0,0,W,m,'F');pdf.rect(0,H-m,W,m,'F');y+=pg;first=false}}
+  deliver(fname('pdf'),pdf.output('blob'));
+}catch(e){say('PDF export failed: '+e.message)}};
+renderRows();renderSheet();
+</script></body></html>
